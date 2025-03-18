@@ -1,30 +1,90 @@
-let op = "";
-let a = 0;
-let b = 0;
+let runningTotal = 0;
+let buffer = "0";
+let previousOperator = "";
 
-const add = function(a, b) {
-    return a + b;
+const screen = document.querySelector('.calc-display');
+
+function buttonClick(value) {
+    if (isNaN(value)) {
+        handleSymbol(value);
+    } else {
+        handleNumber(value);
+    }
+    screen.value = buffer;
 }
 
-const subtract = function(a, b) {
-    return a - b;
-}
-
-const multiply = function(a, b) {
-    return a * b;
-}
-
-const divide = function(a, b) {
-    return a / b;
-}
-
-const operate = function(op, a, b) {
-    switch (op) {
-        case "+": return add(a, b);
-        case "-": return subtract(a, b);
-        case "*": return multiply(a, b);
-        case "/": return divide(a, b);
-        default:
-            console.log("Missing operation");
+function handleSymbol(symbol) {
+    switch (symbol) {
+        case 'C':
+            buffer = "0";
+            runningTotal = 0;
+            previousOperator = null;
+            break;
+        case '←':
+            if (buffer.length === 1) {
+                buffer = '0'
+            } else {
+                buffer = buffer.substring(0, buffer.length - 1);
+            }
+            screen.value = buffer;
+            break;
+        case '=':
+            if (previousOperator === null) return;
+            flushOperation(+buffer);
+            previousOperator = null;
+            buffer = runningTotal;
+            runningTotal = 0;
+            break;
+        case '+':
+        case '-':
+        case '×':
+        case '÷':
+            handleMath(symbol);
+            break;
     }
 }
+
+function handleMath(symbol) {
+    if (buffer === "0") { return; }
+
+    const intBuffer = +buffer;
+
+    if (runningTotal === 0) {
+        runningTotal = intBuffer;
+    } else {
+        flushOperation(intBuffer);
+    }
+
+    previousOperator = symbol;
+    buffer = '0';
+}
+
+function flushOperation(intBuffer) {
+    if (previousOperator === '+') {
+        runningTotal += intBuffer;
+    } else if (previousOperator === '-') {
+        runningTotal -= intBuffer;
+    } else if (previousOperator === '×') {
+        runningTotal *= intBuffer;
+    } else {
+        runningTotal /= intBuffer;
+    }
+}
+
+function handleNumber(numberString) {
+    if (buffer === "0") {
+        buffer = numberString;
+    } else {
+        buffer += numberString;
+    }
+}
+
+
+function init() {
+    document.querySelector('.calculator-buttons')
+        .addEventListener('click', (e) => {
+            buttonClick(e.target.innerText);
+        });
+}
+
+init();
